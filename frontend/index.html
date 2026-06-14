@@ -1,0 +1,933 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Job-Matching Career Agent</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,500;1,6..72,400&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --canvas: #f7f6f2;
+      --card: #ffffff;
+      --card-tint: #fbfaf7;
+      --ink: #161614;
+      --ink-2: #57564f;
+      --ink-3: #8c8a80;
+      --line: #e7e5dd;
+      --line-strong: #d5d2c7;
+      --accent: #18181b;
+      --teal: #0d9488;
+      --teal-soft: #f0fdfa;
+      --amber: #b45309;
+      --amber-soft: #fef3c7;
+      --rose: #be123c;
+      --radius: 18px;
+      --shadow-soft: 0 12px 32px -12px rgba(22, 22, 20, 0.08);
+      --shadow-card: 0 2px 10px -2px rgba(22, 22, 20, 0.04);
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: 'Instrument Sans', system-ui, -apple-system, sans-serif;
+      background: var(--canvas);
+      color: var(--ink);
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Minimal Top Bar */
+    .header {
+      max-width: 1220px;
+      margin: 0 auto;
+      padding: 20px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+      font-size: 17px;
+      letter-spacing: -0.02em;
+    }
+    .logo-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 10px;
+      background: var(--ink);
+      color: #fff;
+      display: grid;
+      place-items: center;
+      font-size: 14px;
+    }
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--ink-2);
+      background: var(--card);
+      border: 1px solid var(--line);
+      padding: 6px 13px;
+      border-radius: 999px;
+    }
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #d97706;
+    }
+    .status-dot.ready { background: var(--teal); }
+    .ghost-btn {
+      border: 1px solid var(--line);
+      background: transparent;
+      color: var(--ink-2);
+      font-family: inherit;
+      font-size: 12.5px;
+      font-weight: 600;
+      padding: 7px 14px;
+      border-radius: 999px;
+      cursor: pointer;
+      transition: 0.15s;
+    }
+    .ghost-btn:hover { background: var(--card); color: var(--ink); border-color: var(--line-strong); }
+
+    /* Centered Editorial Hero + Command Composer */
+    .hero-wrap {
+      max-width: 860px;
+      margin: 10px auto 34px;
+      padding: 0 24px;
+      text-align: center;
+    }
+    .hero-title {
+      font-family: 'Newsreader', Georgia, serif;
+      font-size: clamp(32px, 4.5vw, 46px);
+      font-weight: 500;
+      letter-spacing: -0.025em;
+      line-height: 1.12;
+      margin: 0 0 10px;
+    }
+    .hero-title em {
+      font-style: italic;
+      color: var(--teal);
+    }
+    .hero-sub {
+      margin: 0 0 24px;
+      font-size: 14.5px;
+      color: var(--ink-2);
+    }
+
+    .composer {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      padding: 14px 16px;
+      box-shadow: var(--shadow-soft);
+      text-align: left;
+      transition: border-color 0.2s;
+    }
+    .composer:focus-within { border-color: var(--ink); }
+    .composer textarea {
+      width: 100%;
+      border: 0;
+      outline: none;
+      resize: none;
+      font-family: inherit;
+      font-size: 14.5px;
+      line-height: 1.5;
+      color: var(--ink);
+      background: transparent;
+      min-height: 54px;
+    }
+    .composer textarea::placeholder { color: var(--ink-3); }
+    .composer-bar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding-top: 10px;
+      margin-top: 8px;
+      border-top: 1px solid var(--line);
+    }
+    .quick-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .chip-btn {
+      border: 1px solid var(--line);
+      background: var(--card-tint);
+      color: var(--ink-2);
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 5px 11px;
+      border-radius: 999px;
+      cursor: pointer;
+      transition: 0.15s;
+    }
+    .chip-btn:hover { border-color: var(--ink); color: var(--ink); background: #fff; }
+    .composer-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .mode-select {
+      border: 1px solid var(--line);
+      background: var(--card-tint);
+      border-radius: 10px;
+      padding: 8px 10px;
+      font-family: inherit;
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--ink);
+      outline: none;
+    }
+    .submit-btn {
+      border: 0;
+      background: var(--ink);
+      color: #fff;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 9px 18px;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: 0.15s;
+    }
+    .submit-btn:hover { background: #2c2c28; transform: translateY(-1px); }
+
+    /* Master-Detail Workspace */
+    .workspace {
+      max-width: 1220px;
+      margin: 0 auto;
+      padding: 0 24px 64px;
+      display: grid;
+      grid-template-columns: 1.05fr 0.95fr;
+      gap: 24px;
+      align-items: start;
+    }
+    @media (max-width: 900px) {
+      .workspace { grid-template-columns: 1fr; }
+    }
+
+    /* Left Column: Feed Header + Vertical Role List */
+    .feed-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+      gap: 10px;
+    }
+    .feed-tabs {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .tab-pill {
+      border: 1px solid transparent;
+      background: transparent;
+      color: var(--ink-2);
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 6px 12px;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+    .tab-pill:hover { background: rgba(22,22,20,0.04); color: var(--ink); }
+    .tab-pill.active {
+      background: var(--card);
+      color: var(--ink);
+      border-color: var(--line);
+      box-shadow: var(--shadow-card);
+    }
+    .result-meta {
+      font-size: 12px;
+      color: var(--ink-3);
+      font-weight: 600;
+    }
+
+    .role-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .role-row {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 16px 18px;
+      cursor: pointer;
+      box-shadow: var(--shadow-card);
+      transition: all 0.16s ease;
+      position: relative;
+    }
+    .role-row:hover { border-color: var(--line-strong); transform: translateY(-1px); }
+    .role-row.selected {
+      border-color: var(--ink);
+      box-shadow: 0 8px 24px -10px rgba(22, 22, 20, 0.14);
+    }
+    .row-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .row-left {
+      display: flex;
+      gap: 13px;
+      align-items: flex-start;
+    }
+    .monogram {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      font-weight: 700;
+      font-size: 13px;
+      color: #fff;
+      flex-shrink: 0;
+    }
+    .row-title {
+      margin: 0;
+      font-size: 15.5px;
+      font-weight: 700;
+      line-height: 1.25;
+    }
+    .row-company {
+      margin: 3px 0 0;
+      font-size: 12.5px;
+      color: var(--ink-2);
+    }
+    .fit-pill {
+      font-size: 11.5px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: var(--teal-soft);
+      color: var(--teal);
+      white-space: nowrap;
+    }
+    .row-reason {
+      margin: 10px 0 0;
+      font-size: 13px;
+      line-height: 1.5;
+      color: var(--ink-2);
+    }
+    .row-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 10px;
+    }
+    .mini-tag {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 9px;
+      border-radius: 999px;
+      background: var(--amber-soft);
+      color: var(--amber);
+    }
+
+    /* Right Column: Sticky Inspector + Active Profile */
+    .inspector-col {
+      position: sticky;
+      top: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .panel {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      padding: 22px 24px;
+      box-shadow: var(--shadow-soft);
+    }
+    .brief-box {
+      background: #161614;
+      color: #f7f6f2;
+      border-radius: 20px;
+      padding: 20px 22px;
+      display: none;
+    }
+    .brief-box.show { display: block; }
+    .brief-label {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #5eead4;
+      margin-bottom: 6px;
+    }
+    .brief-text {
+      margin: 0;
+      font-size: 13.5px;
+      line-height: 1.55;
+      color: #e7e5dd;
+    }
+
+    .detail-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--line);
+      margin-bottom: 16px;
+    }
+    .detail-title {
+      margin: 0;
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+    .detail-sub {
+      margin: 4px 0 0;
+      font-size: 13px;
+      color: var(--ink-2);
+    }
+    .detail-section {
+      margin-bottom: 16px;
+    }
+    .detail-section h4 {
+      margin: 0 0 6px;
+      font-size: 11.5px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--ink-3);
+    }
+    .detail-section p {
+      margin: 0;
+      font-size: 13.5px;
+      line-height: 1.55;
+      color: var(--ink);
+    }
+    .detail-actions {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding-top: 14px;
+      border-top: 1px solid var(--line);
+    }
+    .vote-row { display: flex; gap: 8px; }
+    .vote-btn {
+      border: 1px solid var(--line);
+      background: var(--card-tint);
+      color: var(--ink);
+      font-family: inherit;
+      font-size: 12.5px;
+      font-weight: 600;
+      padding: 8px 12px;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+    .vote-btn:hover { border-color: var(--ink); }
+    .apply-btn {
+      background: var(--ink);
+      color: #fff;
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 9px 18px;
+      border-radius: 10px;
+    }
+    .apply-btn:hover { background: #2c2c28; }
+
+    .profile-card h3 {
+      margin: 0 0 10px;
+      font-size: 14px;
+      font-weight: 700;
+    }
+    .profile-line {
+      font-size: 12.5px;
+      color: var(--ink-2);
+      margin-bottom: 7px;
+      line-height: 1.45;
+    }
+    .profile-line strong { color: var(--ink); }
+    .skill-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 6px;
+    }
+    .skill-pill {
+      font-size: 11.5px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: var(--canvas);
+      border: 1px solid var(--line);
+      color: var(--ink);
+    }
+    .state-card {
+      background: var(--card);
+      border: 1px dashed var(--line-strong);
+      border-radius: var(--radius);
+      padding: 36px 24px;
+      text-align: center;
+      color: var(--ink-2);
+      font-size: 13.5px;
+    }
+    .err-card {
+      border-color: #fecdd3;
+      background: #fff1f2;
+      color: var(--rose);
+    }
+  
+    /* Role & Apply Modal */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(22, 22, 20, 0.45);
+      backdrop-filter: blur(4px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      z-index: 100;
+    }
+    .modal-backdrop.open { display: flex; }
+    .modal-card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      max-width: 560px;
+      width: 100%;
+      padding: 24px 26px;
+      box-shadow: 0 24px 60px -12px rgba(22, 22, 20, 0.25);
+      max-height: 88vh;
+      overflow-y: auto;
+    }
+    .modal-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+    .modal-close {
+      border: 1px solid var(--line);
+      background: var(--card-tint);
+      width: 32px;
+      height: 32px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 16px;
+      color: var(--ink-2);
+    }
+    .modal-close:hover { border-color: var(--ink); color: var(--ink); }
+    .pitch-box {
+      background: var(--canvas);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 12px 14px;
+      font-size: 12.5px;
+      line-height: 1.5;
+      color: var(--ink);
+      white-space: pre-wrap;
+      margin-top: 6px;
+    }
+    .modal-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 18px;
+      padding-top: 14px;
+      border-top: 1px solid var(--line);
+    }
+    .link-secondary {
+      border: 1px solid var(--line-strong);
+      background: var(--card);
+      color: var(--ink);
+      text-decoration: none;
+      font-size: 12.5px;
+      font-weight: 600;
+      padding: 9px 14px;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+    .link-secondary:hover { border-color: var(--ink); background: var(--card-tint); }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="logo">
+      <span class="logo-icon">✦</span>
+      <span>Job-Matching Career Agent</span>
+    </div>
+    <div class="header-actions">
+      <div class="status-pill">
+        <span id="statusDot" class="status-dot"></span>
+        <span id="statusText">Connecting...</span>
+      </div>
+      <button class="ghost-btn" onclick="startFresh()">Start Fresh</button>
+    </div>
+  </header>
+
+  <section class="hero-wrap">
+    <h1 class="hero-title">Find roles that <em>actually</em> fit your stack.</h1>
+    <p class="hero-sub">Describe your skills, projects, or preferred city — get ranked matches, honest fit notes, and skill gaps.</p>
+
+    <div class="composer">
+      <textarea id="promptBox" rows="2" placeholder="e.g. Final-year CSE student skilled in Python, FastAPI, SQL, Docker and RAG pipelines looking for AI or backend roles in Bengaluru..."></textarea>
+      <div class="composer-bar">
+        <div class="quick-chips">
+          <button class="chip-btn" onclick="runPreset('AI Engineer, LLM, RAG, FastAPI, Python roles in Bengaluru')">AI &amp; LLMs</button>
+          <button class="chip-btn" onclick="runPreset('Backend Engineer with Python, PostgreSQL, Docker and APIs')">Backend</button>
+          <button class="chip-btn" onclick="runPreset('Frontend Engineer with React, TypeScript, and modern UI design')">Frontend</button>
+          <button class="chip-btn" onclick="runPreset('Remote software engineering internship in Python and AI')">Remote Intern</button>
+        </div>
+        <div class="composer-right">
+          <select id="cityFilter" class="mode-select">
+            <option value="">Any City</option>
+            <option value="Bengaluru">Bengaluru</option>
+            <option value="Remote">Remote</option>
+            <option value="Mumbai">Mumbai</option>
+            <option value="Hyderabad">Hyderabad</option>
+          </select>
+          <button class="submit-btn" onclick="runMatch()">Find Matches →</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <main class="workspace">
+    <!-- Left Column: Ranked Role Feed -->
+    <section>
+      <div class="feed-head">
+        <div class="feed-tabs">
+          <button class="tab-pill active" id="tabExplore" onclick="loadExplore()">Explore All</button>
+          <button class="tab-pill" id="tabAI" onclick="runPreset('AI Engineer, LLM, RAG, FastAPI, Python roles')">AI &amp; LLM</button>
+          <button class="tab-pill" id="tabBE" onclick="runPreset('Backend Engineer Python PostgreSQL Docker')">Backend</button>
+          <button class="tab-pill" id="tabFE" onclick="runPreset('Frontend React TypeScript UI roles')">Frontend</button>
+        </div>
+        <span class="result-meta" id="resultCount"></span>
+      </div>
+
+      <div id="roleList" class="role-list">
+        <div class="state-card">Loading open roles...</div>
+      </div>
+    </section>
+
+    <!-- Right Column: Sticky Inspector & Active Profile -->
+    <aside class="inspector-col">
+      <div id="briefBox" class="brief-box">
+        <div class="brief-label">Match Summary</div>
+        <p id="briefText" class="brief-text"></p>
+      </div>
+
+      <div id="inspectorPanel" class="panel">
+        <div class="state-card" style="border:0; padding:18px 8px;">
+          Select any role on the left to inspect fit details, skill gaps, and apply links.
+        </div>
+      </div>
+
+      <div class="panel profile-card">
+        <h3>Your Active Profile</h3>
+        <div id="profileArea">
+          <div class="profile-line">Nothing saved yet. Describe your skills above and your preferences will stay active across follow-up searches.</div>
+        </div>
+      </div>
+    </aside>
+  </main>
+
+  <script>
+    const API = "http://localhost:8000"; // Replace with your Render URL before Vercel deploy
+    let sid = localStorage.getItem("cp_session_id") || crypto.randomUUID();
+    localStorage.setItem("cp_session_id", sid);
+
+    let currentRoles = [];
+    let selectedIndex = 0;
+
+    const COLORS = ["#18181b", "#0d9488", "#4338ca", "#b45309", "#1d4ed8", "#7c3aed"];
+    const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+    function colorFor(str) {
+      let h = 0;
+      for (let i = 0; i < str.length; i++) h = str.charCodeAt(i) + ((h << 5) - h);
+      return COLORS[Math.abs(h) % COLORS.length];
+    }
+
+    function setTab(id) {
+      document.querySelectorAll(".tab-pill").forEach(t => t.classList.remove("active"));
+      const el = document.getElementById(id);
+      if (el) el.classList.add("active");
+    }
+
+    async function init() {
+      try {
+        const r = await fetch(API + "/health");
+        if (r.ok) {
+          const d = await r.json();
+          document.getElementById("statusDot").classList.add("ready");
+          document.getElementById("statusText").textContent = `${d.jobs_indexed} Roles Available`;
+        }
+      } catch {
+        document.getElementById("statusText").textContent = "Backend Offline";
+      }
+      loadExplore();
+    }
+
+    async function loadExplore() {
+      setTab("tabExplore");
+      document.getElementById("briefBox").classList.remove("show");
+      document.getElementById("roleList").innerHTML = `<div class="state-card">Loading curated roles...</div>`;
+      try {
+        const r = await fetch(API + "/search?q=" + encodeURIComponent("software engineer python AI backend") + "&k=8");
+        if (!r.ok) throw new Error("HTTP " + r.status);
+        const rows = await r.json();
+        currentRoles = rows.map(x => ({
+          id: x.id,
+          title: x.title,
+          company: x.company,
+          location: x.location,
+          url: x.url,
+          match_score: null,
+          reason: "Run Find Matches above with your skills to see your personalized fit score and skill gaps.",
+          missing_skills: [],
+          snippet: ""
+        }));
+        renderList();
+      } catch (e) {
+        document.getElementById("roleList").innerHTML =
+          `<div class="state-card err-card">Could not connect to ${esc(API)}. Make sure the backend server is running.</div>`;
+      }
+    }
+
+    function runPreset(text) {
+      document.getElementById("promptBox").value = text;
+      runMatch();
+    }
+
+    async function runMatch() {
+      const raw = document.getElementById("promptBox").value.trim();
+      const city = document.getElementById("cityFilter").value;
+      if (!raw) {
+        document.getElementById("promptBox").focus();
+        return;
+      }
+      const message = city ? `${raw} (Preferred location: ${city})` : raw;
+      document.getElementById("roleList").innerHTML = `<div class="state-card">Matching your profile against open roles...</div>`;
+
+      try {
+        const r = await fetch(API + "/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ session_id: sid, message })
+        });
+        if (!r.ok) {
+          let detail = "HTTP " + r.status;
+          try { const err = await r.json(); if (err.detail) detail = err.detail; } catch {}
+          throw new Error(detail);
+        }
+        const d = await r.json();
+
+        renderProfile(d.profile);
+        document.getElementById("briefBox").classList.add("show");
+        document.getElementById("briefText").textContent = d.summary;
+
+        currentRoles = (d.jobs || []).map(j => ({
+          id: j.job_id,
+          title: j.title,
+          company: j.company,
+          location: j.location,
+          url: j.url,
+          match_score: j.match_score,
+          reason: j.reason,
+          missing_skills: j.missing_skills || [],
+          snippet: j.snippet || ""
+        }));
+        renderList();
+      } catch (e) {
+        document.getElementById("roleList").innerHTML =
+          `<div class="state-card err-card">${esc(e.message)}</div>`;
+      }
+    }
+
+    function renderList() {
+      const list = document.getElementById("roleList");
+      document.getElementById("resultCount").textContent = `${currentRoles.length} roles`;
+      if (!currentRoles.length) {
+        list.innerHTML = `<div class="state-card">No matching roles found. Try broadening your skills or city.</div>`;
+        return;
+      }
+      selectedIndex = 0;
+      list.innerHTML = currentRoles.map((r, i) => {
+        const init = (r.company || "CP").slice(0, 2).toUpperCase();
+        const badge = r.match_score !== null ? `<span class="fit-pill">${r.match_score}% Match</span>` : `<span class="fit-pill" style="background:#f4f4f5;color:#52525b;">Open Role</span>`;
+        const gaps = r.missing_skills.slice(0, 2).map(g => `<span class="mini-tag">Build: ${esc(g)}</span>`).join("");
+        return `
+          <article class="role-row ${i === 0 ? "selected" : ""}" onclick="selectRole(${i})">
+            <div class="row-top">
+              <div class="row-left">
+                <div class="monogram" style="background:${colorFor(r.company || "A")}">${esc(init)}</div>
+                <div>
+                  <h3 class="row-title">${esc(r.title)}</h3>
+                  <div class="row-company">${esc(r.company)} · ${esc(r.location)}</div>
+                </div>
+              </div>
+              ${badge}
+            </div>
+            <p class="row-reason">${esc(r.reason)}</p>
+            ${gaps ? `<div class="row-tags">${gaps}</div>` : ""}
+          </article>
+        `;
+      }).join("");
+      renderInspector(currentRoles[0]);
+    }
+
+    function selectRole(idx) {
+      selectedIndex = idx;
+      document.querySelectorAll(".role-row").forEach((el, i) => {
+        el.classList.toggle("selected", i === idx);
+      });
+      renderInspector(currentRoles[idx]);
+    }
+
+    function renderInspector(r) {
+      if (!r) return;
+      const gapsHtml = r.missing_skills.length
+        ? `<div class="row-tags">${r.missing_skills.map(g => `<span class="mini-tag">${esc(g)}</span>`).join("")}</div>`
+        : `<p style="color:var(--ink-2)">No major skill gaps flagged for this role.</p>`;
+      document.getElementById("inspectorPanel").innerHTML = `
+        <div class="detail-header">
+          <div>
+            <h2 class="detail-title">${esc(r.title)}</h2>
+            <div class="detail-sub">${esc(r.company)} · ${esc(r.location)}</div>
+          </div>
+          ${r.match_score !== null ? `<span class="fit-pill">${r.match_score}% Fit</span>` : ""}
+        </div>
+        <div class="detail-section">
+          <h4>Why It Fits</h4>
+          <p>${esc(r.reason)}</p>
+        </div>
+        <div class="detail-section">
+          <h4>Skills to Strengthen</h4>
+          ${gapsHtml}
+        </div>
+        ${r.snippet ? `<div class="detail-section"><h4>Role Overview</h4><p style="color:var(--ink-2)">${esc(r.snippet)}</p></div>` : ""}
+        <div class="detail-actions">
+          <div class="vote-row">
+            <button class="vote-btn" onclick="sendVote('${esc(r.id)}', 1, this)">👍 More like this</button>
+            <button class="vote-btn" onclick="sendVote('${esc(r.id)}', -1, this)">👎 Not for me</button>
+          </div>
+          <button type="button" class="apply-btn" style="border:0;cursor:pointer;" onclick="openRoleModal()">View &amp; Apply →</button>
+        </div>
+      `;
+    }
+
+    function renderProfile(p) {
+      if (!p) return;
+      const skills = (p.skills || []).map(s => `<span class="skill-pill">${esc(s)}</span>`).join("");
+      document.getElementById("profileArea").innerHTML = `
+        <div class="profile-line"><strong>Focus:</strong> ${esc(p.search_query)}</div>
+        ${p.location ? `<div class="profile-line"><strong>City:</strong> ${esc(p.location)}</div>` : ""}
+        ${p.seniority ? `<div class="profile-line"><strong>Level:</strong> ${esc(p.seniority)}</div>` : ""}
+        ${skills ? `<div class="skill-tags">${skills}</div>` : ""}
+      `;
+    }
+
+    async function sendVote(jobId, rating, btn) {
+      await fetch(API + "/feedback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ session_id: sid, job_id: jobId, rating })
+      });
+      btn.textContent = rating > 0 ? "✓ Saved preference" : "✕ Hidden from future matches";
+    }
+
+    function startFresh() {
+      sid = crypto.randomUUID();
+      localStorage.setItem("cp_session_id", sid);
+      location.reload();
+    }
+
+    document.getElementById("promptBox").addEventListener("keydown", e => {
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        runMatch();
+      }
+    });
+
+    
+    function isRealUrl(u) {
+      return u && /^https?:\/\//i.test(u) && !u.includes("example.com");
+    }
+
+    function openRoleModal() {
+      const r = currentRoles[selectedIndex];
+      if (!r) return;
+      const q = encodeURIComponent(`${r.title} ${r.company}`);
+      const loc = encodeURIComponent(r.location || "India");
+      const linkedinUrl = `https://www.linkedin.com/jobs/search/?keywords=${q}&location=${loc}`;
+      const googleJobsUrl = `https://www.google.com/search?q=${encodeURIComponent(r.title + " " + r.company + " " + (r.location || "") + " careers")}&ibp=htl;jobs`;
+      const pitch = `Hi ${r.company} team,\n\nI came across the ${r.title} opening (${r.location}) and would love to be considered. ${r.reason}\n\nLooking forward to connecting!`;
+
+      const directBtn = isRealUrl(r.url)
+        ? `<a class="apply-btn" href="${esc(r.url)}" target="_blank" rel="noopener">Apply Directly ↗</a>`
+        : `<a class="apply-btn" href="${linkedinUrl}" target="_blank" rel="noopener">Search Live on LinkedIn ↗</a>`;
+
+      document.getElementById("modalBody").innerHTML = `
+        <div class="modal-top">
+          <div>
+            <h2 class="detail-title">${esc(r.title)}</h2>
+            <div class="detail-sub">${esc(r.company)} · ${esc(r.location)}</div>
+          </div>
+          <button class="modal-close" onclick="closeModal()">✕</button>
+        </div>
+        <div class="detail-section">
+          <h4>Fit Summary</h4>
+          <p>${esc(r.reason)}</p>
+        </div>
+        ${r.snippet ? `<div class="detail-section"><h4>Role Description</h4><p style="color:var(--ink-2)">${esc(r.snippet)}</p></div>` : ""}
+        <div class="detail-section">
+          <h4>Quick Intro Pitch</h4>
+          <div id="pitchText" class="pitch-box">${esc(pitch)}</div>
+        </div>
+        <div class="modal-links">
+          ${directBtn}
+          <a class="link-secondary" href="${googleJobsUrl}" target="_blank" rel="noopener">Google Jobs ↗</a>
+          <button type="button" class="link-secondary" onclick="copyPitch(this)">Copy Pitch</button>
+        </div>
+      `;
+      document.getElementById("applyModal").classList.add("open");
+    }
+
+    function closeModal() {
+      document.getElementById("applyModal").classList.remove("open");
+    }
+
+    function copyPitch(btn) {
+      const txt = document.getElementById("pitchText").textContent;
+      navigator.clipboard.writeText(txt).then(() => {
+        btn.textContent = "✓ Copied";
+        setTimeout(() => btn.textContent = "Copy Pitch", 1800);
+      });
+    }
+
+    init();
+  </script>
+
+  <div id="applyModal" class="modal-backdrop" onclick="if(event.target===this) closeModal()">
+    <div class="modal-card" id="modalBody"></div>
+  </div>
+</body>
+</html>
