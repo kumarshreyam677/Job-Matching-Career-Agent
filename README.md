@@ -1,7 +1,7 @@
 # Job-Matching Career Agent
 
-> **Live Frontend (Vercel):** `<PASTE_YOUR_VERCEL_URL>`  
-> **Live API Docs (Render Docker):** `<PASTE_YOUR_RENDER_URL>/docs`
+> **Live Frontend (Vercel):** `https://job-matching-career-agent-frontend.vercel.app`  
+> **Live API Docs (Render Docker):** `https://job-matching-career-agent.onrender.com/docs`
 
 An end-to-end **LLM Career Copilot** built with **FastAPI**, **PostgreSQL + `pgvector` + Full-Text Search**, **`BAAI/bge-small-en-v1.5` embeddings**, **Pydantic-validated Structured Outputs**, **Persistent Session Memory**, **Automated LLM Evals**, and **Synthetic Load Testing**.
 

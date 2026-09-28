@@ -5,6 +5,7 @@ import argparse
 import json
 import pathlib
 import statistics
+import time
 import uuid
 from datetime import datetime, timezone
 
@@ -24,6 +25,26 @@ CASES = [
 ]
 
 
+def call_with_retry(api: str, text: str, max_attempts: int = 5):
+    for attempt in range(1, max_attempts + 1):
+        try:
+            r = requests.post(
+                f"{api.rstrip('/')}/chat",
+                json={"session_id": str(uuid.uuid4()), "message": text},
+                timeout=90,
+            )
+            if r.status_code == 200:
+                return r
+            wait = 12 * attempt
+            print(f"  -> HTTP {r.status_code}, retrying in {wait}s (attempt {attempt}/{max_attempts})...")
+            time.sleep(wait)
+        except Exception as e:
+            wait = 12 * attempt
+            print(f"  -> Error {e}, retrying in {wait}s (attempt {attempt}/{max_attempts})...")
+            time.sleep(wait)
+    return None
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--api", default="http://localhost:8000")
@@ -31,8 +52,8 @@ def main():
 
     res = []
     for idx, (text, kws) in enumerate(CASES, start=1):
-        r = requests.post(f"{a.api.rstrip('/')}/chat", json={"session_id": str(uuid.uuid4()), "message": text}, timeout=90)
-        if r.status_code != 200:
+        r = call_with_retry(a.api, text)
+        if r is None:
             res.append({"id": f"E{idx:02d}", "case": text, "ok": False})
             continue
         d = r.json()
@@ -50,6 +71,8 @@ def main():
             }
         )
         print(f"[E{idx:02d}] valid_json={d['meta']['valid_json']} grounded={d['meta']['grounded']} hit@5={hit5} ({d['meta']['latency_ms']} ms)")
+        if idx < len(CASES):
+            time.sleep(6)
 
     ok = [r for r in res if r["ok"]]
     latencies = sorted(r["latency_ms"] for r in ok) if ok else [0]
@@ -69,7 +92,7 @@ def main():
     out_dir = pathlib.Path(__file__).parent
     (out_dir / "results.json").write_text(json.dumps({"summary": summary, "cases": res}, indent=2), encoding="utf-8")
 
-    md = f"""# CareerPilot AI — Automated LLM & RAG Evaluation Report
+    md = f"""# Job-Matching Career Agent — Automated LLM & RAG Evaluation Report
 
 - **Target API:** `{summary['target_api']}`
 - **Timestamp (UTC):** `{summary['timestamp_utc']}`

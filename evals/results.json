@@ -1,0 +1,106 @@
+{
+  "summary": {
+    "target_api": "https://job-matching-career-agent.onrender.com",
+    "timestamp_utc": "2026-09-28 22:27:51 UTC",
+    "n_cases": 10,
+    "success_rate": 100.0,
+    "valid_json_rate": 100.0,
+    "grounded_rate": 100.0,
+    "hit_at_5": 100.0,
+    "p50_latency_ms": 4959.5,
+    "p95_latency_ms": 5893,
+    "note": "Synthetic benchmark profiles evaluated against live hybrid RAG + LLM pipeline"
+  },
+  "cases": [
+    {
+      "id": "E01",
+      "case": "Final year BTech CS, strong Python, FastAPI, SQL, Docker. Want backend roles.",
+      "ok": true,
+      "valid_json": true,
+      "grounded": true,
+      "hit5": true,
+      "latency_ms": 5428
+    },
+    {
+      "id": "E02",
+      "case": "I know React and TypeScript, want frontend jobs.",
+      "ok": true,
+      "valid_json": true,
+      "grounded": true,
+      "hit5": true,
+      "latency_ms": 3505
+    },
+    {
+      "id": "E03",
+      "case": "Interested in LLMs, RAG, embeddings, vector search.",
+      "ok": true,
+      "valid_json": true,
+      "grounded": true,
+      "hit5": true,
+      "latency_ms": 5704
+    },
+    {
+      "id": "E04",
+      "case": "SQL, Tableau, Excel; want data analyst role.",
+      "ok": true,
+      "valid_json": true,
+      "grounded": true,
+      "hit5": true,
+      "latency_ms": 4262
+    },
+    {
+      "id": "E05",
+      "case": "Docker, Kubernetes, CI/CD, Terraform, cloud reliability.",
+      "ok": true,
+      "valid_json": true,
+      "grounded": true,
+      "hit5": true,
+      "latency_ms": 4836
+    },
+    {
+      "id": "E06",
+      "case": "Kotlin and Android app development.",
+      "ok": true,
+      "valid_json": true,
+      "grounded": true,
+      "hit5": true,
+      "latency_ms": 3557
+    },
+    {
+      "id": "E07",
+      "case": "Search relevance, ranking, BM25, pgvector.",
+      "ok": true,
+      "valid_json": true,
+      "grounded": true,
+      "hit5": true,
+      "latency_ms": 5893
+    },
+    {
+      "id": "E08",
+      "case": "Figma, user research, prototyping, UI design.",
+      "ok": true,
+      "valid_json": true,
+      "grounded": true,
+      "hit5": true,
+      "latency_ms": 4128
+    },
+    {
+      "id": "E09",
+      "case": "Build conversational AI agents with tool use, memory, and evals.",
+      "ok": true,
+      "valid_json": true,
+      "grounded": true,
+      "hit5": true,
+      "latency_ms": 5857
+    },
+    {
+      "id": "E10",
+      "case": "Entry-level software engineering or AI/ML graduate role in Bengaluru.",
+      "ok": true,
+      "valid_json": true,
+      "grounded": true,
+      "hit5": true,
+      "latency_ms": 5083
+    }
+  ]
+}
